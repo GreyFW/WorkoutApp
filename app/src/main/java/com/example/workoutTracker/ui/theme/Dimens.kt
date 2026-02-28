@@ -10,7 +10,7 @@ object AppDimens {
     val paddingExtraLarge = 32.dp
     val paddingHuge = 48.dp
 
-    val iconSizeStandard = 38.dp
+    val iconSizeStandard = 36.dp
     val dividerThicknessStandard = 2.dp
     val dividerThicknessThick = 4.dp
 }

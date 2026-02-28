@@ -40,7 +40,10 @@ fun WorkoutScreen() {
     var startM by remember { mutableStateOf("00") }
     var endH by remember { mutableStateOf("99") }
     var endM by remember { mutableStateOf("99") }
-    val currentStreak = 12
+    var isStartUntouched by remember { mutableStateOf(true) }
+    var isEndUntouched by remember { mutableStateOf(true) }
+
+    val currentStreak = 4
 
     Column(
         modifier = Modifier
@@ -96,9 +99,27 @@ fun WorkoutScreen() {
                 )
                 Spacer(modifier = Modifier.width(AppDimens.paddingSmall))
 
-                TimeInputField(startH, startM) { h, m -> startH = h; startM = m }
+                TimeInputField(
+                    hour = startH,
+                    minute = startM,
+                    isUntouched = isStartUntouched
+                ) { h, m ->
+                    startH = h
+                    startM = m
+                    if (isStartUntouched) isStartUntouched = false
+                }
+
                 Text(" — ", color = BlueAccent, fontWeight = FontWeight.Bold)
-                TimeInputField(endH, endM) { h, m -> endH = h; endM = m }
+
+                TimeInputField(
+                    hour = endH,
+                    minute = endM,
+                    isUntouched = isEndUntouched
+                ) { h, m ->
+                    endH = h
+                    endM = m
+                    if (isEndUntouched) isEndUntouched = false
+                }
             }
             // STREAK-ROW
             Row(verticalAlignment = Alignment.CenterVertically) {
