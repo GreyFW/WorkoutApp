@@ -1,4 +1,4 @@
-package com.example.workoutTracker
+package com.example.workouttracker
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -11,8 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.workoutTracker.ui.screens.splash.SplashScreen
-import com.example.workoutTracker.ui.screens.workout.WorkoutScreen
+import com.example.workouttracker.ui.screens.splash.SplashScreen
+import com.example.workouttracker.ui.screens.workout.WorkoutScreen
 import kotlinx.coroutines.delay
 
 enum class AppScreen {

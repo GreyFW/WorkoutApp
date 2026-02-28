@@ -1,4 +1,4 @@
-package com.example.workoutTracker
+package com.example.workouttracker
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.workoutTracker.ui.theme.Term6Lab2Theme
+import com.example.workouttracker.ui.theme.Term6Lab2Theme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

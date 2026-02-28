@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.workoutTracker"
+    namespace = "com.example.workouttracker"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.workoutTracker"
+        applicationId = "com.example.workouttracker"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

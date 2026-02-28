@@ -1,4 +1,4 @@
-package com.example.workoutTracker.ui.screens.workout
+package com.example.workouttracker.ui.screens.workout
 
 class WorkoutScreen {
 }

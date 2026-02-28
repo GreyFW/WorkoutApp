@@ -1,4 +1,4 @@
-package com.example.workoutTracker.ui.components
+package com.example.workouttracker.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.workoutTracker.ui.theme.*
+import com.example.workouttracker.ui.theme.*
 
 @Composable
 fun PastDayBox(day: String, isTrained: Boolean) {

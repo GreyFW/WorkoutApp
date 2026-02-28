@@ -1,4 +1,4 @@
-package com.example.workoutTracker.ui.theme
+package com.example.workouttracker.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
@@ -26,7 +26,5 @@ val BlueAccentSecondary = Color(0xFF5166CE)
 val TextBlueMain = BlueAccent
 val TextBlueSecondary = BlueAccentSecondary
 
-val AccentGreen = Color(0xFF4CAF50)
-val AccentOrange = Color(0xFFE65100)
 val TextGray = Color.LightGray
 val DividerGray = Color.LightGray

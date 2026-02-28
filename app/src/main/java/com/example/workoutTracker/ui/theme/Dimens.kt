@@ -1,4 +1,4 @@
-package com.example.workoutTracker.ui.theme
+package com.example.workouttracker.ui.theme
 
 import androidx.compose.ui.unit.dp
 
