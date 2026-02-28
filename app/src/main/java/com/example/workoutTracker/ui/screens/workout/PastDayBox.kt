@@ -48,12 +48,13 @@ fun PastDayBox(
         Text (
             text = day,
             color = if (isTrained) White else BlueAccent,
-            fontSize = 18.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = CustomFontFamily,
             modifier = Modifier.padding(
                 end = if (type == DayBoxType.START) 6.dp else 0.dp,
-                start = if (type == DayBoxType.END) 6.dp else 0.dp
+                start = if (type == DayBoxType.END) 6.dp else 0.dp,
+                top = 2.dp
             )
         )
     }

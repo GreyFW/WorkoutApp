@@ -25,7 +25,7 @@ fun WorkoutApp() {
     var currentScreen by remember { mutableStateOf(AppScreen.Splash) }
 
     LaunchedEffect(Unit) {
-        delay(3000)
+        delay(2000)
         currentScreen = AppScreen.Workout
     }
 
