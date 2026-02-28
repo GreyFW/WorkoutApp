@@ -8,6 +8,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,7 +45,7 @@ fun SplashScreen() {
         initialValue = 0.4f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
+            animation = tween(600, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "alpha_animation"
@@ -62,76 +63,64 @@ fun SplashScreen() {
                     fontWeight = FontWeight.ExtraBold
                 ),
                 start = startIndex,
-                end = startIndex + streakValueStr.length
+                end = fullStreakText.length
             )
         }
     }
 
-    val levelValueStr = currentLevel.toString()
-    val fullLevelText = stringResource(id = R.string.current_level, currentLevel)
-    val levelAnnotated = buildAnnotatedString {
-        append(fullLevelText)
-        val startIndex = fullLevelText.indexOf(levelValueStr)
-        if (startIndex >= 0) {
-            addStyle(
-                style = SpanStyle(
-                    color = BlueAccent,
-                    fontWeight = FontWeight.ExtraBold
-                ),
-                start = startIndex,
-                end = startIndex + levelValueStr.length
-            )
-        }
-    }
-
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BlueBGDark),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(BlueBGDark)
     ) {
-        Text(
-            text = stringResource(id = R.string.greeting),
-            color = BlueAccent,
-            fontSize = 36.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = CustomFontFamily,
-            modifier = Modifier.alpha(alpha)
-        )
-
-        Spacer(modifier = Modifier.height(AppDimens.paddingHuge))
-
-        Text(
-            text = randomQuote,
-            color = BlueAccentSecondary,
-            fontSize = 18.sp,
-            fontFamily = CustomFontFamily,
-            modifier = Modifier.padding(horizontal = AppDimens.paddingExtraLarge)
-        )
-
-        Spacer(modifier = Modifier.height(AppDimens.paddingLarge))
-
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = AppDimens.paddingExtraLarge),
-            horizontalAlignment = Alignment.Start
+                .fillMaxSize()
+                .alpha(alpha),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = streakAnnotated,
-                color = BlueAccentSecondary,
-                fontSize = 18.sp,
+                text = stringResource(id = R.string.greeting),
+                color = BlueAccent,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = CustomFontFamily
             )
 
-            Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+            Spacer(modifier = Modifier.height(AppDimens.paddingHuge))
 
-            LevelProgressBar(
-                currentLevel = currentLevel,
-                maxLevel = maxLevel
+            Text(
+                text = randomQuote,
+                color = BlueAccentSecondary,
+                fontSize = 18.sp,
+                fontFamily = CustomFontFamily,
+                modifier = Modifier.padding(horizontal = AppDimens.paddingExtraLarge)
             )
+
+            Spacer(modifier = Modifier.height(AppDimens.paddingHuge))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = AppDimens.paddingExtraLarge),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = streakAnnotated,
+                    color = BlueAccentSecondary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = CustomFontFamily
+                )
+
+                Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+
+                LevelProgressBar(
+                    currentLevel = currentLevel,
+                    maxLevel = maxLevel
+                )
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -14,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -63,22 +63,43 @@ fun LevelProgressBar(
 
         val progressFraction = (currentLevel.toFloat() / maxLevel.toFloat()).coerceIn(0f, 1f)
 
+        val parentShape = RoundedCornerShape(4.dp)
+
+        val fillShape = RoundedCornerShape(
+            topStart = 4.dp,
+            bottomStart = 4.dp,
+            topEnd = if (progressFraction == 1f) 4.dp else 0.dp,
+            bottomEnd = if (progressFraction == 1f) 4.dp else 0.dp
+        )
+
         Box(
             modifier = Modifier
                 .weight(1f)
                 .height(16.dp)
-                .border(
-                    width = 2.dp,
-                    color = BlueAccentSecondary,
-                    shape = RoundedCornerShape(4.dp)
-                )
-                .clip(RoundedCornerShape(4.dp))
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .border(
+                        width = 2.dp,
+                        color = BlueAccentSecondary,
+                        shape = parentShape
+                    )
+            )
+
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(fraction = progressFraction)
-                    .background(BlueAccent)
+                    .background(
+                        color = BlueAccent,
+                        shape = fillShape
+                    )
+                    .border(
+                        width = 2.dp,
+                        color = BlueAccent,
+                        shape = fillShape
+                    )
             )
         }
     }
