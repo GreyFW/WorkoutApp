@@ -1,4 +1,4 @@
-package com.example.workouttracker.ui.components
+package com.example.workouttracker.ui.screens.workout
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
