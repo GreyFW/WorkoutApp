@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.workouttracker.R
+import com.example.workouttracker.ui.components.LevelProgressBar
 import com.example.workouttracker.ui.theme.*
 
 @Composable
@@ -35,6 +37,7 @@ fun SplashScreen() {
     val randomQuote = remember { quotes.random() }
     val currentStreak = 12
     val currentLevel = 4
+    val maxLevel = 10
 
     val infiniteTransition = rememberInfiniteTransition(label = "breathing")
     val alpha by infiniteTransition.animateFloat(
@@ -109,20 +112,26 @@ fun SplashScreen() {
 
         Spacer(modifier = Modifier.height(AppDimens.paddingLarge))
 
-        Text(
-            text = streakAnnotated,
-            color = BlueAccentSecondary,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = CustomFontFamily
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = AppDimens.paddingExtraLarge),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = streakAnnotated,
+                color = BlueAccentSecondary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = CustomFontFamily
+            )
 
-        Text(
-            text = levelAnnotated,
-            color = BlueAccentSecondary,
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            fontFamily = CustomFontFamily
-        )
+            Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+
+            LevelProgressBar(
+                currentLevel = currentLevel,
+                maxLevel = maxLevel
+            )
+        }
     }
 }
