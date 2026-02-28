@@ -7,7 +7,6 @@
 
     <string name="daily_workout">DAILY WORKOUT</string>
     <string name="streak_count">STREAK: %1$d</string>
-    <string name="time_separator"> — </string>
     <string name="mock_date">28 feb. saturday</string>
 
     <string-array name="splash_quotes">

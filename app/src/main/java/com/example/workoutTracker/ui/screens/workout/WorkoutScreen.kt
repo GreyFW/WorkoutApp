@@ -12,10 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -26,7 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,8 +36,10 @@ import com.example.workouttracker.ui.theme.*
 
 @Composable
 fun WorkoutScreen() {
-    var startTime by remember { mutableStateOf("16:00") }
-    var endTime by remember { mutableStateOf("17:30") }
+    var startH by remember { mutableStateOf("00") }
+    var startM by remember { mutableStateOf("00") }
+    var endH by remember { mutableStateOf("99") }
+    var endM by remember { mutableStateOf("99") }
     val currentStreak = 12
 
     Column(
@@ -48,119 +49,83 @@ fun WorkoutScreen() {
             .padding(
                 top = AppDimens.paddingHuge,
                 start = AppDimens.paddingMedium,
-                end = AppDimens.paddingMedium
+                end = AppDimens.paddingMedium,
+                bottom = AppDimens.paddingMedium
             )
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall)) {
-                PastDayBox(day = "24", isTrained = true)
-                PastDayBox(day = "25", isTrained = false)
-                PastDayBox(day = "26", isTrained = true)
-                PastDayBox(day = "27", isTrained = true)
-            }
+        HeaderDates(currentDate = "28 feb. saturday")
 
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = stringResource(id = R.string.mock_date),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = CustomFontFamily,
-                    color = BlueAccent
-                )
-                HorizontalDivider(
-                    modifier = Modifier.width(120.dp),
-                    thickness = AppDimens.dividerThicknessThick,
-                    color = BlueAccent
-                )
-            }
-        }
+        Spacer(modifier = Modifier.height(AppDimens.paddingExtraSmall))
 
-        Spacer(modifier = Modifier.height(AppDimens.paddingExtraLarge))
-
+        // BANNER
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(BlueAccent, shape = RoundedCornerShape(8.dp))
-                .padding(vertical = AppDimens.paddingMedium),
-            contentAlignment = Alignment.Center
+                .height(58.dp)
+                .paint(
+                    painter = painterResource(id = R.drawable.ic_banner_title),
+                    contentScale = ContentScale.FillBounds,
+                ),
+            contentAlignment = Alignment.CenterStart
         ) {
             Text(
-                text = stringResource(id = R.string.daily_workout),
+                text = stringResource(id = R.string.daily_workout).uppercase(),
                 color = Color.White,
                 fontSize = 34.sp,
                 fontWeight = FontWeight.ExtraBold,
-                fontFamily = CustomFontFamily
-            )
-        }
-
-        Spacer(modifier = Modifier.height(AppDimens.paddingLarge))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // закинуть вектор иконки с часами
-            // Icon(
-            //    imageVector = Icons.Default.Schedule,
-            //    contentDescription = null,
-            //    tint = Color.Black,
-            //    modifier = Modifier.size(AppDimens.iconSizeStandard)
-            //)
-
-            Spacer(modifier = Modifier.width(AppDimens.paddingSmall))
-
-            BasicTextField(
-                value = startTime,
-                onValueChange = { startTime = it },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold, color = BlueAccent)
-            )
-
-            Text(
-                text = stringResource(id = R.string.time_separator),
-                color = BlueAccent,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = CustomFontFamily
-            )
-
-            BasicTextField(
-                value = endTime,
-                onValueChange = { endTime = it },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold, color = BlueAccent)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                tint = BlueAccent,
-                modifier = Modifier.size(AppDimens.iconSizeStandard)
-            )
-
-            Spacer(modifier = Modifier.width(AppDimens.paddingSmall))
-
-            Text(
-                text = stringResource(id = R.string.streak_count, currentStreak),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
                 fontFamily = CustomFontFamily,
-                color = BlueAccent
+                modifier = Modifier.padding(start = 24.dp, top = 3.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
+        Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+
+        // ROW TIME + STREAK
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // TIME-ROW
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_timer),
+                    contentDescription = null,
+                    tint = BlueAccent,
+                    modifier = Modifier.size(AppDimens.iconSizeStandard)
+                )
+                Spacer(modifier = Modifier.width(AppDimens.paddingSmall))
+
+                TimeInputField(startH, startM) { h, m -> startH = h; startM = m }
+                Text(" — ", color = BlueAccent, fontWeight = FontWeight.Bold)
+                TimeInputField(endH, endM) { h, m -> endH = h; endM = m }
+            }
+            // STREAK-ROW
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_streak_arrow),
+                    contentDescription = null,
+                    tint = BlueAccent,
+                    modifier = Modifier.size(AppDimens.iconSizeStandard)
+                )
+                Text(
+                    text = "STREAK: $currentStreak",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontFamily = CustomFontFamily,
+                    color = BlueAccent,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
 
         HorizontalDivider(
             thickness = AppDimens.dividerThicknessStandard,
             color = BlueAccent
         )
+
+        // WORKOUT LIST
     }
 }
