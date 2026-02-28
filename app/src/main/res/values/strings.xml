@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">Workout Tracker</string>
 
-    <string name="greeting">Hey, welcome back!</string>
-    <string name="current_streak">Current Streak: %1$d Days</string>
-    <string name="current_level">Level: %1$s</string>
+    <string name="greeting">You got this!</string>
+    <string name="current_streak">CURRENT STREAK: %1$d Days</string>
+    <string name="current_level">LEVEL: %1$d</string>
 
     <string name="daily_workout">DAILY WORKOUT</string>
     <string name="streak_count">STREAK: %1$d</string>
