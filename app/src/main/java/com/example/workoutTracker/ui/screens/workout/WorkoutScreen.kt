@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.workouttracker.R
 import com.example.workouttracker.ui.theme.*
-import com.example.workouttracker.ui.theme.DividerGray
 
 @Composable
 fun WorkoutScreen() {
@@ -92,10 +91,9 @@ fun WorkoutScreen() {
             Text(
                 text = stringResource(id = R.string.daily_workout),
                 color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Black,
-                fontFamily = CustomFontFamily,
-                letterSpacing = 2.sp
+                fontSize = 34.sp,
+                fontWeight = FontWeight.ExtraBold,
+                fontFamily = CustomFontFamily
             )
         }
 
@@ -117,11 +115,12 @@ fun WorkoutScreen() {
             BasicTextField(
                 value = startTime,
                 onValueChange = { startTime = it },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold, color = BlueAccent)
             )
 
             Text(
                 text = stringResource(id = R.string.time_separator),
+                color = BlueAccent,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = CustomFontFamily
@@ -130,7 +129,7 @@ fun WorkoutScreen() {
             BasicTextField(
                 value = endTime,
                 onValueChange = { endTime = it },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold, color = BlueAccent)
             )
         }
 
@@ -161,7 +160,7 @@ fun WorkoutScreen() {
 
         HorizontalDivider(
             thickness = AppDimens.dividerThicknessStandard,
-            color = DividerGray
+            color = BlueAccent
         )
     }
 }

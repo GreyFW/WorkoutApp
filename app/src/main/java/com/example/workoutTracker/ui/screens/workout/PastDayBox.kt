@@ -25,7 +25,7 @@ fun PastDayBox(day: String, isTrained: Boolean) {
               shape = RoundedCornerShape(4.dp)
           )
           .border(
-              width = 1.dp,
+              width = 2.dp,
               color = BlueAccent,
               shape = RoundedCornerShape(4.dp)
           ),

@@ -19,6 +19,7 @@ val BlueBGDark = Color(0xFFDFE5F2)
 val BlueField = Color(0xFFC0CCE6)
 
 val BlueAccent = Color(0xFF3113B6)
+val BlueAccentBright = Color(0XFF3511D3)
 val BlueAccentShadow = Color(0x66300D81)
 
 val BlueAccentSecondary = Color(0xFF5166CE)
@@ -26,5 +27,4 @@ val BlueAccentSecondary = Color(0xFF5166CE)
 val TextBlueMain = BlueAccent
 val TextBlueSecondary = BlueAccentSecondary
 
-val TextGray = Color.LightGray
-val DividerGray = Color.LightGray
+val TextGray = Color(0xFF617591)

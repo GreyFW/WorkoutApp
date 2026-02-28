@@ -11,6 +11,6 @@ object AppDimens {
 
     val iconSizeStandard = 24.dp
     val dayBoxSize = 36.dp
-    val dividerThicknessStandard = 1.dp
-    val dividerThicknessThick = 2.dp
+    val dividerThicknessStandard = 2.dp
+    val dividerThicknessThick = 4.dp
 }
