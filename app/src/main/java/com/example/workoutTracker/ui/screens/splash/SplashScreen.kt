@@ -57,6 +57,7 @@ fun SplashScreen() {
             color = BlueAccent,
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
+            fontFamily = CustomFontFamily,
             modifier = Modifier.alpha(alpha)
         )
 
@@ -66,6 +67,7 @@ fun SplashScreen() {
             text = randomQuote,
             color = BlueAccentSecondary,
             fontSize = 16.sp,
+            fontFamily = CustomFontFamily,
             modifier = Modifier.padding(horizontal = AppDimens.paddingExtraLarge)
         )
 
@@ -75,13 +77,15 @@ fun SplashScreen() {
             text = stringResource(id = R.string.current_streak, currentStreak),
             color = BlueAccent,
             fontSize = 18.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            fontFamily = CustomFontFamily
         )
 
         Text(
             text = stringResource(id = R.string.current_level, currentLevel),
             color = BlueAccentSecondary,
-            fontSize = 18.sp
+            fontSize = 18.sp,
+            fontFamily = CustomFontFamily
         )
     }
 }

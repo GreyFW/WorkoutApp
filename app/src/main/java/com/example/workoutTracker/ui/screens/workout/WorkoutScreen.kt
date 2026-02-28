@@ -69,6 +69,7 @@ fun WorkoutScreen() {
                     text = stringResource(id = R.string.mock_date),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
+                    fontFamily = CustomFontFamily,
                     color = BlueAccent
                 )
                 HorizontalDivider(
@@ -93,6 +94,7 @@ fun WorkoutScreen() {
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Black,
+                fontFamily = CustomFontFamily,
                 letterSpacing = 2.sp
             )
         }
@@ -121,7 +123,8 @@ fun WorkoutScreen() {
             Text(
                 text = stringResource(id = R.string.time_separator),
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                fontFamily = CustomFontFamily
             )
 
             BasicTextField(
@@ -149,6 +152,7 @@ fun WorkoutScreen() {
                 text = stringResource(id = R.string.streak_count, currentStreak),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
+                fontFamily = CustomFontFamily,
                 color = BlueAccent
             )
         }
