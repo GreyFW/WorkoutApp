@@ -1,3 +1,19 @@
 <resources>
-    <string name="app_name">Term6Lab2</string>
+    <string name="app_name">Workout Tracker</string>
+
+    <string name="greeting">Hey, welcome back!</string>
+    <string name="current_streak">Current Streak: %1$d Days</string>
+    <string name="current_level">Level: %1$s</string>
+
+    <string name="daily_workout">DAILY WORKOUT</string>
+    <string name="streak_count">STREAK: %1$d</string>
+    <string name="time_separator"> — </string>
+    <string name="mock_date">28 feb. saturday</string>
+
+    <string-array name="splash_quotes">
+        <item>Push yourself, because no one else is going to do it for you.</item>
+        <item>Success starts with self-discipline.</item>
+        <item>Always get back up.</item>
+        <item>Elevate.</item>
+    </string-array>
 </resources>
