@@ -1,51 +1,30 @@
 package com.example.workouttracker.ui.screens.workout
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.workouttracker.R
+import com.example.workouttracker.models.Exercise
+import com.example.workouttracker.models.Note
+import com.example.workouttracker.models.WorkoutSet
+import com.example.workouttracker.ui.screens.workout.exercisesList.ExerciseListSection
 import com.example.workouttracker.ui.theme.*
+import com.example.workouttracker.ui.screens.workout.header.WorkoutScreenHeader
+import com.example.workouttracker.ui.screens.workout.notesList.NotesSection
 
 @Composable
 fun WorkoutScreen() {
-    var startH by remember { mutableStateOf("00") }
-    var startM by remember { mutableStateOf("00") }
-    var endH by remember { mutableStateOf("99") }
-    var endM by remember { mutableStateOf("99") }
-    var isStartUntouched by remember { mutableStateOf(true) }
-    var isEndUntouched by remember { mutableStateOf(true) }
+    val notesList = remember { mutableStateListOf<Note>() }
 
-    val currentStreak = 4
-
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(BlueBGDark)
@@ -56,97 +35,40 @@ fun WorkoutScreen() {
                 bottom = AppDimens.paddingMedium
             )
     ) {
-        HeaderDates(currentDate = "28 feb. saturday")
+        item {
+            WorkoutScreenHeader()
 
-        Spacer(modifier = Modifier.height(AppDimens.paddingExtraSmall))
+            Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
 
-        // BANNER
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(58.dp)
-                .paint(
-                    painter = painterResource(id = R.drawable.ic_banner_title),
-                    contentScale = ContentScale.FillBounds,
-                ),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Text(
-                text = stringResource(id = R.string.daily_workout).uppercase(),
-                color = Color.White,
-                fontSize = 34.sp,
-                fontWeight = FontWeight.ExtraBold,
-                fontFamily = CustomFontFamily,
-                modifier = Modifier.padding(start = 24.dp, top = 3.dp)
+            HorizontalDivider(
+                thickness = AppDimens.dividerThicknessStandard,
+                color = BlueAccent
             )
         }
 
-        Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+        item {
+            Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
 
-        // ROW TIME + STREAK
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            // TIME-ROW
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_timer),
-                    contentDescription = null,
-                    tint = BlueAccent,
-                    modifier = Modifier.size(AppDimens.iconSizeStandard)
-                )
-                Spacer(modifier = Modifier.width(AppDimens.paddingSmall))
+            ExerciseListSection()
 
-                TimeInputField(
-                    hour = startH,
-                    minute = startM,
-                    isUntouched = isStartUntouched
-                ) { h, m ->
-                    startH = h
-                    startM = m
-                    if (isStartUntouched) isStartUntouched = false
-                }
-
-                Text(" — ", color = BlueAccent, fontWeight = FontWeight.Bold)
-
-                TimeInputField(
-                    hour = endH,
-                    minute = endM,
-                    isUntouched = isEndUntouched
-                ) { h, m ->
-                    endH = h
-                    endM = m
-                    if (isEndUntouched) isEndUntouched = false
-                }
-            }
-            // STREAK-ROW
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_streak_arrow),
-                    contentDescription = null,
-                    tint = BlueAccent,
-                    modifier = Modifier.size(AppDimens.iconSizeStandard)
-                )
-                Text(
-                    text = "STREAK: $currentStreak",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontFamily = CustomFontFamily,
-                    color = BlueAccent,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-            }
+            Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
         }
 
-        Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+        item {
+            HorizontalDivider(
+                thickness = AppDimens.dividerThicknessStandard,
+                color = BlueAccent
+            )
 
-        HorizontalDivider(
-            thickness = AppDimens.dividerThicknessStandard,
-            color = BlueAccent
-        )
+            Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
 
-        // WORKOUT LIST
+            NotesSection(
+                notes = notesList,
+                onAddNoteClick = {
+                    val newId = notesList.size + 1
+                    notesList.add(Note(id = newId, text = "New auto-generated note $newId"))
+                }
+            )
+        }
     }
 }

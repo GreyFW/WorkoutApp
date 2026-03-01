@@ -1,4 +1,4 @@
-package com.example.workouttracker.ui.screens.workout
+package com.example.workouttracker.ui.screens.workout.header
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
