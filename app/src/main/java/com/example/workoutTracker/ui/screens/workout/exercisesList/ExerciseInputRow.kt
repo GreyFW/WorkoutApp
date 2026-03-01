@@ -58,18 +58,12 @@ fun ExerciseInputRow(
     val repsLimit = 3
     val maxRepsPerRow = 3
 
+    val nameFieldPaddingEnd = 4.dp
     val equipmentBoxWidth = 48.dp
+    val spacerBeforeWeight = 16.dp
     val weightBoxWidth = 64.dp
+    val spacerBeforeReps = 8.dp
     val repsBoxWidth = 100.dp
-
-    val spacerAfterName = 0.dp      // Расстояние от названия до EQP блока
-    val spacerAfterEquipment = 20.dp  // Расстояние от EQP до веса (было spacerBeforeWeight)
-    val spacerAfterWeight = 16.dp    // Расстояние от веса до повторений (было spacerBeforeReps)
-
-    // ДОПОЛНИТЕЛЬНЫЙ ОТСТУП СПРАВА - чтобы сдвинуть все блоки правее
-    val rightOffset = 0.dp
-    // Чем БОЛЬШЕ rightOffset, тем ЛЕВЕЕ будут блоки (поскольку название занимает всё свободное место)
-    // Чем МЕНЬШЕ rightOffset, тем ПРАВЕЕ будут блоки
 
     var name by remember { mutableStateOf("") }
     var equipment by remember { mutableStateOf<EquipmentType?>(null) }
@@ -155,8 +149,8 @@ fun ExerciseInputRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
-                        .padding(start = 24.dp, end = rightOffset)
-                ) { // NAME FIELD
+                        .padding(start = 24.dp)
+                ) {
                     BasicTextField(
                         value = name,
                         onValueChange = { newValue ->
@@ -171,7 +165,8 @@ fun ExerciseInputRow(
                         cursorBrush = SolidColor(BlueAccent),
                         singleLine = true,
                         modifier = Modifier
-                            .weight(1f),
+                            .weight(1f)
+                            .padding(end = nameFieldPaddingEnd),
                         decorationBox = { innerTextField ->
                             if (name.isEmpty()) {
                                 Text(
@@ -185,8 +180,6 @@ fun ExerciseInputRow(
                             innerTextField()
                         }
                     )
-
-                    Spacer(modifier = Modifier.width(spacerAfterName))
 
                     if (name.isNotEmpty()) {
                         Box(
@@ -260,9 +253,9 @@ fun ExerciseInputRow(
                         Spacer(modifier = Modifier.width(equipmentBoxWidth))
                     }
 
-                    Spacer(modifier = Modifier.width(spacerAfterEquipment))
+                    Spacer(modifier = Modifier.width(spacerBeforeWeight))
 
-                    Box( // WEIGHT BOX
+                    Box(
                         modifier = Modifier.width(weightBoxWidth),
                         contentAlignment = Alignment.Center
                     ) {
@@ -314,9 +307,9 @@ fun ExerciseInputRow(
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(spacerAfterWeight))
+                    Spacer(modifier = Modifier.width(spacerBeforeReps))
 
-                    Box( // REPS BOX
+                    Box(
                         modifier = Modifier.width(repsBoxWidth),
                         contentAlignment = Alignment.CenterStart
                     ) {
