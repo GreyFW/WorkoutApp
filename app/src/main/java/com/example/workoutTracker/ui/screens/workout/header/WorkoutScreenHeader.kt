@@ -1,6 +1,7 @@
 package com.example.workouttracker.ui.screens.workout.header
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,12 +10,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,12 +33,18 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.workouttracker.R
-import com.example.workouttracker.ui.theme.*
+import com.example.workouttracker.ui.theme.AppDimens
+import com.example.workouttracker.ui.theme.BlueAccent
+import com.example.workouttracker.ui.theme.CustomFontFamily
+import com.example.workouttracker.utils.DateUtils
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 @Composable
 fun WorkoutScreenHeader() {
@@ -43,16 +56,18 @@ fun WorkoutScreenHeader() {
     var isEndUntouched by remember { mutableStateOf(true) }
 
     val currentStreak = 4
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
-        HeaderDates(currentDate = "28 feb. saturday")
+        HeaderDates(
+            selectedDate = selectedDate,
+            onDateChanged = { newDate -> selectedDate = newDate }
+        )
 
         Spacer(modifier = Modifier.height(AppDimens.paddingExtraSmall))
 
-        // BANNER
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -64,7 +79,7 @@ fun WorkoutScreenHeader() {
             contentAlignment = Alignment.CenterStart
         ) {
             Text(
-                text = stringResource(id = R.string.daily_workout).uppercase(),
+                text = "DAILY WORKOUT",
                 color = Color.White,
                 fontSize = 34.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -75,13 +90,11 @@ fun WorkoutScreenHeader() {
 
         Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
 
-        // ROW TIME + STREAK
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // TIME-ROW
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_timer),
@@ -113,7 +126,7 @@ fun WorkoutScreenHeader() {
                     if (isEndUntouched) isEndUntouched = false
                 }
             }
-            // STREAK-ROW
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_streak_arrow),
@@ -131,5 +144,95 @@ fun WorkoutScreenHeader() {
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HeaderDates(
+    selectedDate: LocalDate,
+    onDateChanged: (LocalDate) -> Unit
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    )
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val newDate = Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
+                        onDateChanged(newDate)
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK", color = BlueAccent)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel", color = BlueAccent)
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    val pastDays = DateUtils.getLastFourDays(selectedDate)
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy((-8).dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                pastDays.forEachIndexed { index, date ->
+                    val type = when (index) {
+                        0 -> DayBoxType.START
+                        3 -> DayBoxType.END
+                        else -> DayBoxType.MID
+                    }
+                    val dayStr = date.dayOfMonth.toString().padStart(2, '0')
+
+                    Box(modifier = Modifier.clickable { onDateChanged(date) }) {
+                        PastDayBox(
+                            day = dayStr,
+                            isTrained = false,
+                            type = type
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = DateUtils.getFormattedDate(selectedDate),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = CustomFontFamily,
+                color = BlueAccent,
+                modifier = Modifier
+                    .padding(end = AppDimens.paddingExtraSmall)
+                    .offset(x = 6.dp)
+                    .clickable { showDatePicker = true }
+            )
+        }
+        Image(
+            painter = painterResource(id = R.drawable.ic_today_line),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier
+                .width(200.dp)
+                .height(16.dp)
+                .align(Alignment.End)
+                .offset(x = (50).dp, y = (-14).dp)
+        )
     }
 }

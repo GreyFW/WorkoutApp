@@ -51,11 +51,7 @@ import com.example.workouttracker.ui.theme.TextGray
 fun ExerciseInputRow(
     onDeleteExercise: () -> Unit
 ) {
-    val maxRepsPerRow = 3
-
-    val spaceBeforeEqp = 10.dp
-    val spaceBeforeWeight = 16.dp
-    val spaceBeforeReps = 10.dp
+    val maxRepsPerRow = 4
 
     var name by remember { mutableStateOf("") }
     var equipment by remember { mutableStateOf<EquipmentType?>(null) }
@@ -101,7 +97,7 @@ fun ExerciseInputRow(
                     .fillMaxWidth()
                     .height(48.dp)
                     .paint(
-                        painter = painterResource(id = R.drawable.ic_list_element),
+                        painter = painterResource(id = R.drawable.ic_list_element_light_ver),
                         contentScale = ContentScale.FillBounds
                     )
                     .pointerInput(Unit) {
@@ -123,7 +119,7 @@ fun ExerciseInputRow(
                         modifier = Modifier.weight(1f)
                     )
 
-                    Spacer(modifier = Modifier.width(spaceBeforeEqp))
+                    Spacer(modifier = Modifier.width(16.dp))
 
                     if (name.isNotEmpty()) {
                         EquipmentSelector(
@@ -140,15 +136,11 @@ fun ExerciseInputRow(
                         Spacer(modifier = Modifier.width(48.dp))
                     }
 
-                    Spacer(modifier = Modifier.width(spaceBeforeWeight))
-
                     WeightInputField(
                         equipment = equipment,
                         weight = weight,
                         onWeightChange = { weight = it }
                     )
-
-                    Spacer(modifier = Modifier.width(spaceBeforeReps))
 
                     RepsInputField(
                         equipment = equipment,
@@ -233,7 +225,7 @@ private fun EquipmentSelector(
                 when (equipment) {
                     EquipmentType.DB -> Icon(painterResource(id = R.drawable.ic_dumbbells), null, tint = BlueAccent)
                     EquipmentType.BB -> Icon(painterResource(id = R.drawable.ic_barbell), null, tint = BlueAccent)
-                    EquipmentType.FW, EquipmentType.P -> Spacer(modifier = Modifier.width(48.dp))
+                    EquipmentType.FW, EquipmentType.P -> Spacer(modifier = Modifier.width(54.dp))
                 }
             }
         }
