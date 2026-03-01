@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,7 +46,13 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 @Composable
-fun WorkoutScreenHeader() {
+fun WorkoutScreenHeader(
+    selectedDate: LocalDate,
+    onDateChanged: (LocalDate) -> Unit,
+    currentStreak: Int,
+    trainedDates: Set<String>,
+    onSaveWorkout: () -> Unit
+) {
     var startH by remember { mutableStateOf("00") }
     var startM by remember { mutableStateOf("00") }
     var endH by remember { mutableStateOf("99") }
@@ -55,18 +60,14 @@ fun WorkoutScreenHeader() {
     var isStartUntouched by remember { mutableStateOf(true) }
     var isEndUntouched by remember { mutableStateOf(true) }
 
-    val currentStreak = 4
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         HeaderDates(
             selectedDate = selectedDate,
-            onDateChanged = { newDate -> selectedDate = newDate }
+            trainedDates = trainedDates,
+            onDateChanged = onDateChanged
         )
-
-        Spacer(modifier = Modifier.height(AppDimens.paddingExtraSmall))
 
         Box(
             modifier = Modifier
@@ -132,7 +133,9 @@ fun WorkoutScreenHeader() {
                     painter = painterResource(id = R.drawable.ic_streak_arrow),
                     contentDescription = null,
                     tint = BlueAccent,
-                    modifier = Modifier.size(AppDimens.iconSizeStandard)
+                    modifier = Modifier
+                        .size(AppDimens.iconSizeStandard)
+                        .clickable { onSaveWorkout() }
                 )
                 Text(
                     text = "STREAK: $currentStreak",
@@ -151,6 +154,7 @@ fun WorkoutScreenHeader() {
 @Composable
 fun HeaderDates(
     selectedDate: LocalDate,
+    trainedDates: Set<String>,
     onDateChanged: (LocalDate) -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
@@ -201,11 +205,12 @@ fun HeaderDates(
                         else -> DayBoxType.MID
                     }
                     val dayStr = date.dayOfMonth.toString().padStart(2, '0')
+                    val isTrained = trainedDates.contains(date.toString())
 
                     Box(modifier = Modifier.clickable { onDateChanged(date) }) {
                         PastDayBox(
                             day = dayStr,
-                            isTrained = false,
+                            isTrained = isTrained,
                             type = type
                         )
                     }

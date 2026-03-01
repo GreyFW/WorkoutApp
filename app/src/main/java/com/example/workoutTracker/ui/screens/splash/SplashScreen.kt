@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -29,16 +30,21 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.workouttracker.R
+import com.example.workouttracker.data.prefs.WorkoutPrefs
 import com.example.workouttracker.ui.components.LevelProgressBar
 import com.example.workouttracker.ui.theme.*
 
 @Composable
 fun SplashScreen() {
+    val context = LocalContext.current
+    val prefs = remember { WorkoutPrefs(context) }
+
     val quotes = stringArrayResource(id = R.array.splash_quotes)
     val randomQuote = remember { quotes.random() }
-    val currentStreak = 12
-    val currentLevel = 4
-    val maxLevel = 10
+
+    val currentStreak = prefs.streak
+    val currentLevel = prefs.level
+    val maxLevel = prefs.maxLevel
 
     val infiniteTransition = rememberInfiniteTransition(label = "breathing")
     val alpha by infiniteTransition.animateFloat(
