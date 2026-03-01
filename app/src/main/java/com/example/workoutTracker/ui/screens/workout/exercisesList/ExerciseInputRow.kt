@@ -16,12 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -53,17 +51,11 @@ import com.example.workouttracker.ui.theme.TextGray
 fun ExerciseInputRow(
     onDeleteExercise: () -> Unit
 ) {
-    val exerciseNameLimit = 16
-    val weightLimit = 3
-    val repsLimit = 3
     val maxRepsPerRow = 3
 
-    val nameFieldPaddingEnd = 4.dp
-    val equipmentBoxWidth = 48.dp
-    val spacerBeforeWeight = 16.dp
-    val weightBoxWidth = 64.dp
-    val spacerBeforeReps = 8.dp
-    val repsBoxWidth = 100.dp
+    val spaceBeforeEqp = 10.dp
+    val spaceBeforeWeight = 16.dp
+    val spaceBeforeReps = 10.dp
 
     var name by remember { mutableStateOf("") }
     var equipment by remember { mutableStateOf<EquipmentType?>(null) }
@@ -78,44 +70,20 @@ fun ExerciseInputRow(
     val rowCount = (savedReps.size / maxRepsPerRow) + 1
 
     if (showDeleteDialogForIndex != null) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialogForIndex = null },
-            title = {
-                Text(
-                    text = "Delete",
-                    color = BlueAccent,
-                    fontFamily = CustomFontFamily,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = if (showDeleteDialogForIndex == 0) "Remove this exercise entirely?" else "Remove these reps?",
-                    fontFamily = CustomFontFamily
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val index = showDeleteDialogForIndex!!
-                        if (index == 0) {
-                            onDeleteExercise()
-                        } else {
-                            val start = index * maxRepsPerRow
-                            val end = minOf(start + maxRepsPerRow, savedReps.size)
-                            savedReps.subList(start, end).clear()
-                        }
-                        showDeleteDialogForIndex = null
-                    }
-                ) {
-                    Text("Yes", color = Color.Red, fontFamily = CustomFontFamily, fontWeight = FontWeight.Bold)
+        DeleteConfirmDialog(
+            isFullExercise = showDeleteDialogForIndex == 0,
+            onConfirm = {
+                val index = showDeleteDialogForIndex!!
+                if (index == 0) {
+                    onDeleteExercise()
+                } else {
+                    val start = index * maxRepsPerRow
+                    val end = minOf(start + maxRepsPerRow, savedReps.size)
+                    savedReps.subList(start, end).clear()
                 }
+                showDeleteDialogForIndex = null
             },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialogForIndex = null }) {
-                    Text("Cancel", color = BlueAccent, fontFamily = CustomFontFamily)
-                }
-            }
+            onDismiss = { showDeleteDialogForIndex = null }
         )
     }
 
@@ -138,9 +106,7 @@ fun ExerciseInputRow(
                     )
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onLongPress = {
-                                showDeleteDialogForIndex = rowIndex
-                            }
+                            onLongPress = { showDeleteDialogForIndex = rowIndex }
                         )
                     }
             ) {
@@ -151,10 +117,243 @@ fun ExerciseInputRow(
                         .fillMaxHeight()
                         .padding(start = 24.dp)
                 ) {
+                    ExerciseNameField(
+                        name = name,
+                        onNameChange = { name = it },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Spacer(modifier = Modifier.width(spaceBeforeEqp))
+
+                    if (name.isNotEmpty()) {
+                        EquipmentSelector(
+                            equipment = equipment,
+                            isExpanded = expandedDropdownIndex == rowIndex,
+                            onDropdownClick = { expandedDropdownIndex = rowIndex },
+                            onDismiss = { expandedDropdownIndex = null },
+                            onEquipmentSelect = {
+                                equipment = it
+                                if (it == EquipmentType.FW) weight = ""
+                            }
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.width(48.dp))
+                    }
+
+                    Spacer(modifier = Modifier.width(spaceBeforeWeight))
+
+                    WeightInputField(
+                        equipment = equipment,
+                        weight = weight,
+                        onWeightChange = { weight = it }
+                    )
+
+                    Spacer(modifier = Modifier.width(spaceBeforeReps))
+
+                    RepsInputField(
+                        equipment = equipment,
+                        weight = weight,
+                        rowReps = rowReps,
+                        currentRepInput = currentRepInput,
+                        rowIndex = rowIndex,
+                        rowCount = rowCount,
+                        maxRepsPerRow = maxRepsPerRow,
+                        onRepInputChange = { currentRepInput = it },
+                        onRepSubmit = {
+                            if (currentRepInput.isNotEmpty()) {
+                                savedReps.add(currentRepInput)
+                                currentRepInput = ""
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExerciseNameField(
+    name: String,
+    onNameChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BasicTextField(
+        value = name,
+        onValueChange = { if (it.length <= 16) onNameChange(it) },
+        textStyle = TextStyle(
+            color = BlueAccent,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.ExtraBold,
+            fontFamily = CustomFontFamily
+        ),
+        cursorBrush = SolidColor(BlueAccent),
+        singleLine = true,
+        modifier = modifier,
+        decorationBox = { innerTextField ->
+            if (name.isEmpty()) {
+                Text(
+                    text = "name...",
+                    color = TextGray,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontFamily = CustomFontFamily
+                )
+            }
+            innerTextField()
+        }
+    )
+}
+
+@Composable
+private fun EquipmentSelector(
+    equipment: EquipmentType?,
+    isExpanded: Boolean,
+    onDropdownClick: () -> Unit,
+    onDismiss: () -> Unit,
+    onEquipmentSelect: (EquipmentType) -> Unit
+) {
+    Box(modifier = Modifier.width(48.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .clickable { onDropdownClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            if (equipment == null) {
+                Text(
+                    text = "EQP",
+                    color = TextGray,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = CustomFontFamily
+                )
+            } else {
+                when (equipment) {
+                    EquipmentType.DB -> Icon(painterResource(id = R.drawable.ic_dumbbells), null, tint = BlueAccent)
+                    EquipmentType.BB -> Icon(painterResource(id = R.drawable.ic_barbell), null, tint = BlueAccent)
+                    EquipmentType.FW, EquipmentType.P -> Spacer(modifier = Modifier.width(48.dp))
+                }
+            }
+        }
+
+        DropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = onDismiss,
+            modifier = Modifier.background(Color.White)
+        ) {
+            EquipmentType.entries.forEach { eqpType ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = eqpType.label,
+                            color = BlueAccent,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = CustomFontFamily
+                        )
+                    },
+                    onClick = {
+                        onEquipmentSelect(eqpType)
+                        onDismiss()
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WeightInputField(
+    equipment: EquipmentType?,
+    weight: String,
+    onWeightChange: (String) -> Unit
+) {
+    Box(
+        modifier = Modifier.width(64.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        if (equipment != null && equipment != EquipmentType.FW) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BasicTextField(
+                    value = weight,
+                    onValueChange = { newValue ->
+                        val digits = newValue.filter { it.isDigit() }
+                        if (digits.length <= 3) onWeightChange(digits)
+                    },
+                    textStyle = TextStyle(
+                        color = BlueAccent,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = CustomFontFamily,
+                        textAlign = TextAlign.End
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    cursorBrush = SolidColor(BlueAccent),
+                    modifier = Modifier.width(28.dp),
+                    decorationBox = { innerTextField ->
+                        if (weight.isEmpty()) {
+                            Text(
+                                text = "0",
+                                color = TextGray,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = CustomFontFamily,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+                Text(
+                    text = "kg",
+                    color = BlueAccent,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = CustomFontFamily
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RepsInputField(
+    equipment: EquipmentType?,
+    weight: String,
+    rowReps: List<String>,
+    currentRepInput: String,
+    rowIndex: Int,
+    rowCount: Int,
+    maxRepsPerRow: Int,
+    onRepInputChange: (String) -> Unit,
+    onRepSubmit: () -> Unit
+) {
+    Box(
+        modifier = Modifier.width(100.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        if (equipment == EquipmentType.FW || equipment == EquipmentType.P || (equipment != null && weight.isNotEmpty())) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (rowReps.isNotEmpty()) {
+                    val needsDash = if (rowReps.size < maxRepsPerRow && rowIndex == rowCount - 1) " - " else ""
+                    Text(
+                        text = rowReps.joinToString(" - ") + needsDash,
+                        color = BlueAccent,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = CustomFontFamily
+                    )
+                }
+
+                if (rowIndex == rowCount - 1 && rowReps.size < maxRepsPerRow) {
                     BasicTextField(
-                        value = name,
+                        value = currentRepInput,
                         onValueChange = { newValue ->
-                            if (newValue.length <= exerciseNameLimit) name = newValue
+                            val digits = newValue.filter { it.isDigit() }
+                            if (digits.length <= 3) onRepInputChange(digits)
                         },
                         textStyle = TextStyle(
                             color = BlueAccent,
@@ -162,17 +361,20 @@ fun ExerciseInputRow(
                             fontWeight = FontWeight.ExtraBold,
                             fontFamily = CustomFontFamily
                         ),
-                        cursorBrush = SolidColor(BlueAccent),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(onDone = { onRepSubmit() }),
                         singleLine = true,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = nameFieldPaddingEnd),
+                        cursorBrush = SolidColor(BlueAccent),
+                        modifier = Modifier.width(32.dp),
                         decorationBox = { innerTextField ->
-                            if (name.isEmpty()) {
+                            if (currentRepInput.isEmpty() && rowReps.isEmpty()) {
                                 Text(
-                                    text = "name...",
+                                    text = "reps",
                                     color = TextGray,
-                                    fontSize = 16.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.ExtraBold,
                                     fontFamily = CustomFontFamily
                                 )
@@ -180,199 +382,6 @@ fun ExerciseInputRow(
                             innerTextField()
                         }
                     )
-
-                    if (name.isNotEmpty()) {
-                        Box(
-                            modifier = Modifier.width(equipmentBoxWidth)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .fillMaxHeight()
-                                    .clickable { expandedDropdownIndex = rowIndex },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (equipment == null) {
-                                    Text(
-                                        text = "EQP",
-                                        color = TextGray,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        fontFamily = CustomFontFamily
-                                    )
-                                } else {
-                                    when (equipment) {
-                                        EquipmentType.DB -> {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_dumbbells),
-                                                contentDescription = null,
-                                                tint = BlueAccent
-                                            )
-                                        }
-                                        EquipmentType.BB -> {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_barbell),
-                                                contentDescription = null,
-                                                tint = BlueAccent
-                                            )
-                                        }
-                                        EquipmentType.FW, EquipmentType.P -> {
-                                        }
-                                        null -> {}
-                                    }
-                                }
-                            }
-
-                            DropdownMenu(
-                                expanded = expandedDropdownIndex == rowIndex,
-                                onDismissRequest = { expandedDropdownIndex = null },
-                                modifier = Modifier.background(Color.White)
-                            ) {
-                                EquipmentType.entries.forEach { eqpType ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = eqpType.label,
-                                                color = BlueAccent,
-                                                fontWeight = FontWeight.Bold,
-                                                fontFamily = CustomFontFamily
-                                            )
-                                        },
-                                        onClick = {
-                                            equipment = eqpType
-                                            expandedDropdownIndex = null
-                                            if (eqpType == EquipmentType.FW) {
-                                                weight = ""
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        Spacer(modifier = Modifier.width(equipmentBoxWidth))
-                    }
-
-                    Spacer(modifier = Modifier.width(spacerBeforeWeight))
-
-                    Box(
-                        modifier = Modifier.width(weightBoxWidth),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (equipment != null && equipment != EquipmentType.FW) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                BasicTextField(
-                                    value = weight,
-                                    onValueChange = { newValue ->
-                                        val digitsOnly = newValue.filter { it.isDigit() }
-                                        if (digitsOnly.length <= weightLimit) weight = digitsOnly
-                                    },
-                                    textStyle = TextStyle(
-                                        color = BlueAccent,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        fontFamily = CustomFontFamily,
-                                        textAlign = TextAlign.End
-                                    ),
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    singleLine = true,
-                                    cursorBrush = SolidColor(BlueAccent),
-                                    modifier = Modifier.width(28.dp),
-                                    decorationBox = { innerTextField ->
-                                        if (weight.isEmpty()) {
-                                            Text(
-                                                text = "0",
-                                                color = TextGray,
-                                                fontSize = 16.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                fontFamily = CustomFontFamily,
-                                                textAlign = TextAlign.End,
-                                                modifier = Modifier.fillMaxWidth()
-                                            )
-                                        }
-                                        innerTextField()
-                                    }
-                                )
-                                Text(
-                                    text = "kg",
-                                    color = BlueAccent,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    fontFamily = CustomFontFamily
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(spacerBeforeReps))
-
-                    Box(
-                        modifier = Modifier.width(repsBoxWidth),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        if (equipment == EquipmentType.FW || equipment == EquipmentType.P || (equipment != null && weight.isNotEmpty())) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                if (rowReps.isNotEmpty()) {
-                                    val needsDash = if (rowReps.size < maxRepsPerRow && rowIndex == rowCount - 1) " - " else ""
-                                    Text(
-                                        text = rowReps.joinToString(" - ") + needsDash,
-                                        color = BlueAccent,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        fontFamily = CustomFontFamily
-                                    )
-                                }
-
-                                if (rowIndex == rowCount - 1 && rowReps.size < maxRepsPerRow) {
-                                    BasicTextField(
-                                        value = currentRepInput,
-                                        onValueChange = { newValue ->
-                                            val digitsOnly = newValue.filter { it.isDigit() }
-                                            if (digitsOnly.length <= repsLimit) currentRepInput = digitsOnly
-                                        },
-                                        textStyle = TextStyle(
-                                            color = BlueAccent,
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.ExtraBold,
-                                            fontFamily = CustomFontFamily
-                                        ),
-                                        keyboardOptions = KeyboardOptions(
-                                            keyboardType = KeyboardType.Number,
-                                            imeAction = ImeAction.Done
-                                        ),
-                                        keyboardActions = KeyboardActions(
-                                            onDone = {
-                                                if (currentRepInput.isNotEmpty()) {
-                                                    savedReps.add(currentRepInput)
-                                                    currentRepInput = ""
-                                                }
-                                            }
-                                        ),
-                                        singleLine = true,
-                                        cursorBrush = SolidColor(BlueAccent),
-                                        modifier = Modifier.width(32.dp),
-                                        decorationBox = { innerTextField ->
-                                            if (currentRepInput.isEmpty() && savedReps.isEmpty()) {
-                                                Text(
-                                                    text = "reps",
-                                                    color = TextGray,
-                                                    fontSize = 14.sp,
-                                                    fontWeight = FontWeight.ExtraBold,
-                                                    fontFamily = CustomFontFamily
-                                                )
-                                            }
-                                            innerTextField()
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }
