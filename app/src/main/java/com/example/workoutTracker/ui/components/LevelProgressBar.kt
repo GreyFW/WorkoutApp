@@ -1,5 +1,8 @@
 package com.example.workouttracker.ui.components
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -13,6 +16,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -47,6 +55,20 @@ fun LevelProgressBar(
         }
     }
 
+    var isAnimated by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        isAnimated = true
+    }
+
+    val targetFraction = (currentLevel.toFloat() / maxLevel.toFloat()).coerceIn(0f, 1f)
+
+    val animatedFraction by animateFloatAsState(
+        targetValue = if (isAnimated) targetFraction else 0f,
+        animationSpec = tween(durationMillis = 1000, easing = FastOutSlowInEasing),
+        label = "progressAnimation"
+    )
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth()
@@ -61,15 +83,13 @@ fun LevelProgressBar(
 
         Spacer(modifier = Modifier.width(AppDimens.paddingMedium))
 
-        val progressFraction = (currentLevel.toFloat() / maxLevel.toFloat()).coerceIn(0f, 1f)
-
         val parentShape = RoundedCornerShape(4.dp)
 
         val fillShape = RoundedCornerShape(
             topStart = 4.dp,
             bottomStart = 4.dp,
-            topEnd = if (progressFraction == 1f) 4.dp else 0.dp,
-            bottomEnd = if (progressFraction == 1f) 4.dp else 0.dp
+            topEnd = if (animatedFraction == 1f) 4.dp else 0.dp,
+            bottomEnd = if (animatedFraction == 1f) 4.dp else 0.dp
         )
 
         Box(
@@ -90,7 +110,7 @@ fun LevelProgressBar(
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(fraction = progressFraction)
+                    .fillMaxWidth(fraction = animatedFraction)
                     .background(
                         color = BlueAccent,
                         shape = fillShape

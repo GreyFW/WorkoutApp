@@ -129,14 +129,13 @@ fun WorkoutScreenHeader(
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_streak_arrow),
-                    contentDescription = null,
-                    tint = BlueAccent,
-                    modifier = Modifier
-                        .size(AppDimens.iconSizeStandard)
-                        .clickable { onSaveWorkout() }
+                val isTodaySaved = trainedDates.contains(selectedDate.toString())
+
+                SaveStreakButton(
+                    isSaved = isTodaySaved,
+                    onClick = { onSaveWorkout() }
                 )
+
                 Text(
                     text = "STREAK: $currentStreak",
                     fontSize = 16.sp,
