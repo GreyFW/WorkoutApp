@@ -20,11 +20,12 @@ import androidx.compose.ui.unit.sp
 import com.example.workouttracker.ui.theme.BlueAccent
 import com.example.workouttracker.ui.theme.BlueField
 import com.example.workouttracker.ui.theme.CustomFontFamily
+import java.time.LocalDate
 import java.util.UUID
 
 @Composable
-fun ExerciseListSection() {
-    val exercises = remember { mutableStateListOf(UUID.randomUUID().toString()) }
+fun ExerciseListSection(selectedDate: LocalDate) {
+    val exercises = remember(selectedDate) { mutableStateListOf(UUID.randomUUID().toString()) }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
