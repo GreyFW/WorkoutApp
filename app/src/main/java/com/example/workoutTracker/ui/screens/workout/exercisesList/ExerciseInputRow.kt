@@ -23,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,27 +43,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.workouttracker.R
 import com.example.workouttracker.models.EquipmentType
+import com.example.workouttracker.models.Exercise
 import com.example.workouttracker.ui.theme.BlueAccent
 import com.example.workouttracker.ui.theme.CustomFontFamily
 import com.example.workouttracker.ui.theme.TextGray
 
 @Composable
 fun ExerciseInputRow(
-    onDeleteExercise: () -> Unit
+    exercise: Exercise,
+    onDeleteExercise: () -> Unit,
+    onNameChange: (String) -> Unit,
+    onAddSet: (weight: String, reps: String) -> Unit,
+    onDeleteSetRow: (fromIndex: Int, count: Int) -> Unit,
+    onToggleSet: (setId: Int) -> Unit
 ) {
     val maxRepsPerRow = 4
 
-    var name by remember { mutableStateOf("") }
-    var equipment by remember { mutableStateOf<EquipmentType?>(null) }
-    var weight by remember { mutableStateOf("") }
-
-    val savedReps = remember { mutableStateListOf<String>() }
-    var currentRepInput by remember { mutableStateOf("") }
+    var currentRepInput by remember(exercise.id) { mutableStateOf("") }
+    var equipment by remember(exercise.id) { mutableStateOf<EquipmentType?>(null) }
+    var weight by remember(exercise.id) { mutableStateOf("") }
 
     var expandedDropdownIndex by remember { mutableStateOf<Int?>(null) }
     var showDeleteDialogForIndex by remember { mutableStateOf<Int?>(null) }
 
-    val rowCount = (savedReps.size / maxRepsPerRow) + 1
+    val sets = exercise.sets
+    val rowCount = (sets.size / maxRepsPerRow) + 1
 
     if (showDeleteDialogForIndex != null) {
         DeleteConfirmDialog(
@@ -74,9 +77,8 @@ fun ExerciseInputRow(
                 if (index == 0) {
                     onDeleteExercise()
                 } else {
-                    val start = index * maxRepsPerRow
-                    val end = minOf(start + maxRepsPerRow, savedReps.size)
-                    savedReps.subList(start, end).clear()
+                    val fromIndex = index * maxRepsPerRow
+                    onDeleteSetRow(fromIndex, maxRepsPerRow)
                 }
                 showDeleteDialogForIndex = null
             },
@@ -90,8 +92,8 @@ fun ExerciseInputRow(
     ) {
         for (rowIndex in 0 until rowCount) {
             val startIndex = rowIndex * maxRepsPerRow
-            val endIndex = minOf(startIndex + maxRepsPerRow, savedReps.size)
-            val rowReps = savedReps.subList(startIndex, endIndex)
+            val endIndex = minOf(startIndex + maxRepsPerRow, sets.size)
+            val rowSets = sets.subList(startIndex, endIndex)
 
             Box(
                 modifier = Modifier
@@ -115,14 +117,14 @@ fun ExerciseInputRow(
                         .padding(start = 24.dp)
                 ) {
                     ExerciseNameField(
-                        name = name,
-                        onNameChange = { name = it },
+                        name = exercise.name,
+                        onNameChange = onNameChange,
                         modifier = Modifier.weight(1f)
                     )
 
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    if (name.isNotEmpty()) {
+                    if (exercise.name.isNotEmpty()) {
                         EquipmentSelector(
                             equipment = equipment,
                             isExpanded = expandedDropdownIndex == rowIndex,
@@ -146,7 +148,7 @@ fun ExerciseInputRow(
                     RepsInputField(
                         equipment = equipment,
                         weight = weight,
-                        rowReps = rowReps,
+                        rowSets = rowSets,
                         currentRepInput = currentRepInput,
                         rowIndex = rowIndex,
                         rowCount = rowCount,
@@ -154,7 +156,7 @@ fun ExerciseInputRow(
                         onRepInputChange = { currentRepInput = it },
                         onRepSubmit = {
                             if (currentRepInput.isNotEmpty()) {
-                                savedReps.add(currentRepInput)
+                                onAddSet(weight, currentRepInput)
                                 currentRepInput = ""
                             }
                         }
@@ -164,6 +166,9 @@ fun ExerciseInputRow(
         }
     }
 }
+
+// -----------------------------------------------------------------------------
+// Приватные подкомпоненты
 
 @Composable
 private fun ExerciseNameField(
@@ -224,8 +229,16 @@ private fun EquipmentSelector(
                 )
             } else {
                 when (equipment) {
-                    EquipmentType.DB -> Icon(painterResource(id = R.drawable.ic_dumbbells), null, tint = BlueAccent)
-                    EquipmentType.BB -> Icon(painterResource(id = R.drawable.ic_barbell), null, tint = BlueAccent)
+                    EquipmentType.DB -> Icon(
+                        painterResource(id = R.drawable.ic_dumbbells),
+                        contentDescription = null,
+                        tint = BlueAccent
+                    )
+                    EquipmentType.BB -> Icon(
+                        painterResource(id = R.drawable.ic_barbell),
+                        contentDescription = null,
+                        tint = BlueAccent
+                    )
                     EquipmentType.FW, EquipmentType.P -> Spacer(modifier = Modifier.width(54.dp))
                 }
             }
@@ -266,7 +279,7 @@ private fun WeightInputField(
         modifier = Modifier.width(64.dp),
         contentAlignment = Alignment.CenterStart
     ) {
-        if (equipment != null && equipment != EquipmentType.FW) {
+        if (equipment != null && equipment != EquipmentType.FW && equipment != EquipmentType.P) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BasicTextField(
                     value = weight,
@@ -316,7 +329,7 @@ private fun WeightInputField(
 private fun RepsInputField(
     equipment: EquipmentType?,
     weight: String,
-    rowReps: List<String>,
+    rowSets: List<com.example.workouttracker.models.WorkoutSet>,
     currentRepInput: String,
     rowIndex: Int,
     rowCount: Int,
@@ -324,16 +337,22 @@ private fun RepsInputField(
     onRepInputChange: (String) -> Unit,
     onRepSubmit: () -> Unit
 ) {
+    val shouldShow = equipment == EquipmentType.FW
+            || equipment == EquipmentType.P
+            || (equipment != null && weight.isNotEmpty())
+
     Box(
-        modifier = Modifier.width(100.dp).offset(x = (-6).dp),
+        modifier = Modifier
+            .width(100.dp)
+            .offset(x = (-6).dp),
         contentAlignment = Alignment.CenterStart
     ) {
-        if (equipment == EquipmentType.FW || equipment == EquipmentType.P || (equipment != null && weight.isNotEmpty())) {
+        if (shouldShow) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (rowReps.isNotEmpty()) {
-                    val needsDash = if (rowReps.size < maxRepsPerRow && rowIndex == rowCount - 1) " - " else ""
+                if (rowSets.isNotEmpty()) {
+                    val needsDash = rowSets.size < maxRepsPerRow && rowIndex == rowCount - 1
                     Text(
-                        text = rowReps.joinToString(" - ") + needsDash,
+                        text = rowSets.joinToString(" - ") { it.reps } + if (needsDash) " - " else "",
                         color = BlueAccent,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.ExtraBold,
@@ -341,7 +360,7 @@ private fun RepsInputField(
                     )
                 }
 
-                if (rowIndex == rowCount - 1 && rowReps.size < maxRepsPerRow) {
+                if (rowIndex == rowCount - 1 && rowSets.size < maxRepsPerRow) {
                     BasicTextField(
                         value = currentRepInput,
                         onValueChange = { newValue ->
@@ -363,7 +382,7 @@ private fun RepsInputField(
                         cursorBrush = SolidColor(BlueAccent),
                         modifier = Modifier.width(32.dp),
                         decorationBox = { innerTextField ->
-                            if (currentRepInput.isEmpty() && rowReps.isEmpty()) {
+                            if (currentRepInput.isEmpty() && rowSets.isEmpty()) {
                                 Text(
                                     text = "reps",
                                     color = TextGray,
