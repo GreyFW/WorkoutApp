@@ -14,18 +14,22 @@ class SyncTasksWorker(
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
             try {
-                // Имитация отправки данных на сервер
                 val fakeData = FakePostDto("Workout Sync", "Syncing notes to server")
                 RetrofitClient.api.syncNotes(fakeData)
 
-                // Требование 5: Уведомление об успешной синхронизации
+                // Сохраняем время последней синхронизации
+                applicationContext
+                    .getSharedPreferences("sync_prefs", Context.MODE_PRIVATE)
+                    .edit()
+                    .putLong("last_sync_time", System.currentTimeMillis())
+                    .apply()
+
                 NotificationHelper.showNotification(
                     applicationContext,
                     "Синхронизация завершена",
                     "Данные успешно отправлены в облако"
                 )
 
-                // Здесь можно было бы записать время синхронизации в SharedPreferences
                 Result.success()
             } catch (e: Exception) {
                 Result.retry()
