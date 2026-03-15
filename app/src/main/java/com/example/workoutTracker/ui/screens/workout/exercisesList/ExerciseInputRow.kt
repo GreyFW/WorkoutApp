@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,9 +45,27 @@ import androidx.compose.ui.unit.sp
 import com.example.workouttracker.R
 import com.example.workouttracker.models.EquipmentType
 import com.example.workouttracker.models.Exercise
+import com.example.workouttracker.models.WorkoutSet
 import com.example.workouttracker.ui.theme.BlueAccent
 import com.example.workouttracker.ui.theme.CustomFontFamily
 import com.example.workouttracker.ui.theme.TextGray
+
+private fun capacityFor(firstReps: String): Int = when {
+    firstReps.length >= 3 -> 2
+    firstReps.length == 2 -> 3
+    else                  -> 4
+}
+
+private fun sliceIntoRows(sets: List<WorkoutSet>): List<List<WorkoutSet>> {
+    val rows = mutableListOf<List<WorkoutSet>>()
+    var i = 0
+    while (i < sets.size) {
+        val capacity = capacityFor(sets[i].reps)
+        rows.add(sets.subList(i, minOf(i + capacity, sets.size)))
+        i += capacity
+    }
+    return rows
+}
 
 @Composable
 fun ExerciseInputRow(
@@ -57,28 +76,45 @@ fun ExerciseInputRow(
     onDeleteSetRow: (fromIndex: Int, count: Int) -> Unit,
     onToggleSet: (setId: Int) -> Unit
 ) {
-    val maxRepsPerRow = 4
-
     var currentRepInput by remember(exercise.id) { mutableStateOf("") }
     var equipment by remember(exercise.id) { mutableStateOf<EquipmentType?>(null) }
     var weight by remember(exercise.id) { mutableStateOf("") }
 
     var expandedDropdownIndex by remember { mutableStateOf<Int?>(null) }
     var showDeleteDialogForIndex by remember { mutableStateOf<Int?>(null) }
+    val inputRowDismissedState = remember(exercise.id) { mutableStateOf(false) }
+    var inputRowDismissed by inputRowDismissedState
 
-    val sets = exercise.sets
-    val rowCount = (sets.size / maxRepsPerRow) + 1
+    val sliced = sliceIntoRows(exercise.sets)
+    val lastRowFull = sliced.isNotEmpty() && run {
+        val last = sliced.last()
+        last.size >= capacityFor(last.first().reps)
+    }
+
+    LaunchedEffect(lastRowFull) {
+        if (lastRowFull) inputRowDismissedState.value = false
+    }
+
+    val rows: List<List<WorkoutSet>> = if ((sliced.isEmpty() || lastRowFull) && !inputRowDismissed) {
+        sliced + listOf(emptyList())
+    } else {
+        sliced
+    }
+    val rowCount = rows.size
+
+    val inputRowCapacity = if (currentRepInput.isNotEmpty()) capacityFor(currentRepInput) else 4
 
     if (showDeleteDialogForIndex != null) {
+        val index = showDeleteDialogForIndex!!
         DeleteConfirmDialog(
-            isFullExercise = showDeleteDialogForIndex == 0,
+            isFullExercise = index == 0,
             onConfirm = {
-                val index = showDeleteDialogForIndex!!
                 if (index == 0) {
                     onDeleteExercise()
                 } else {
-                    val fromIndex = index * maxRepsPerRow
-                    onDeleteSetRow(fromIndex, maxRepsPerRow)
+                    val fromIndex = rows.take(index).sumOf { it.size }
+                    val count = rows[index].size
+                    onDeleteSetRow(fromIndex, count)
                 }
                 showDeleteDialogForIndex = null
             },
@@ -90,22 +126,31 @@ fun ExerciseInputRow(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy((-2).dp)
     ) {
-        for (rowIndex in 0 until rowCount) {
-            val startIndex = rowIndex * maxRepsPerRow
-            val endIndex = minOf(startIndex + maxRepsPerRow, sets.size)
-            val rowSets = sets.subList(startIndex, endIndex)
+        rows.forEachIndexed { rowIndex, rowSets ->
+            val isLastRow = rowIndex == rowCount - 1
+            val maxRepsPerRow = when {
+                rowSets.isNotEmpty() -> capacityFor(rowSets.first().reps)
+                else                 -> inputRowCapacity
+            }
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .height(56.dp)
                     .paint(
                         painter = painterResource(id = R.drawable.ic_list_element_light_ver),
                         contentScale = ContentScale.FillBounds
                     )
-                    .pointerInput(Unit) {
+                    .pointerInput(rowSets.isEmpty(), inputRowDismissedState) {
                         detectTapGestures(
-                            onLongPress = { showDeleteDialogForIndex = rowIndex }
+                            onLongPress = {
+                                android.util.Log.d("ExerciseRow", "longPress rowIndex=$rowIndex isEmpty=${rowSets.isEmpty()}")
+                                if (rowSets.isEmpty()) {
+                                    inputRowDismissedState.value = true
+                                } else {
+                                    showDeleteDialogForIndex = rowIndex
+                                }
+                            }
                         )
                     }
             ) {
@@ -150,8 +195,7 @@ fun ExerciseInputRow(
                         weight = weight,
                         rowSets = rowSets,
                         currentRepInput = currentRepInput,
-                        rowIndex = rowIndex,
-                        rowCount = rowCount,
+                        isLastRow = isLastRow,
                         maxRepsPerRow = maxRepsPerRow,
                         onRepInputChange = { currentRepInput = it },
                         onRepSubmit = {
@@ -329,10 +373,9 @@ private fun WeightInputField(
 private fun RepsInputField(
     equipment: EquipmentType?,
     weight: String,
-    rowSets: List<com.example.workouttracker.models.WorkoutSet>,
+    rowSets: List<WorkoutSet>,
     currentRepInput: String,
-    rowIndex: Int,
-    rowCount: Int,
+    isLastRow: Boolean,
     maxRepsPerRow: Int,
     onRepInputChange: (String) -> Unit,
     onRepSubmit: () -> Unit
@@ -350,7 +393,7 @@ private fun RepsInputField(
         if (shouldShow) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (rowSets.isNotEmpty()) {
-                    val needsDash = rowSets.size < maxRepsPerRow && rowIndex == rowCount - 1
+                    val needsDash = isLastRow && rowSets.size < maxRepsPerRow
                     Text(
                         text = rowSets.joinToString(" - ") { it.reps } + if (needsDash) " - " else "",
                         color = BlueAccent,
@@ -360,7 +403,7 @@ private fun RepsInputField(
                     )
                 }
 
-                if (rowIndex == rowCount - 1 && rowSets.size < maxRepsPerRow) {
+                if (isLastRow && rowSets.size < maxRepsPerRow) {
                     BasicTextField(
                         value = currentRepInput,
                         onValueChange = { newValue ->
