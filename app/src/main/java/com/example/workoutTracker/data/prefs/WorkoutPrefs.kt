@@ -2,11 +2,13 @@ package com.example.workouttracker.data.prefs
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 class WorkoutPrefs(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences("workout_prefs", Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("workout_prefs", Context.MODE_PRIVATE)
 
     val streak: Int get() = prefs.getInt("streak", 0)
 
@@ -34,26 +36,24 @@ class WorkoutPrefs(context: Context) {
         if (lastDateStr != null) {
             val lastDate = LocalDate.parse(lastDateStr)
             val daysBetween = ChronoUnit.DAYS.between(lastDate, date)
+            val skippedDays = daysBetween - 1
 
             when {
-                daysBetween >= 4 -> newStreak = 1
+                skippedDays >= 4 -> newStreak = 0
                 daysBetween > 0 -> newStreak += 1
             }
         } else {
-            newStreak = 1
+            newStreak = 0
         }
 
-        val shouldUpdateLastDate = lastDateStr == null || LocalDate.parse(lastDateStr).isBefore(date)
+        val shouldUpdateLastDate =
+            lastDateStr == null || LocalDate.parse(lastDateStr).isBefore(date)
 
-        val editor = prefs.edit()
-            .putInt("streak", newStreak)
-            .putInt("total_workouts", totalWorkouts + 1)
-            .putStringSet("trained_dates", trainedDates)
-
-        if (shouldUpdateLastDate) {
-            editor.putString("last_workout_date", dateStr)
+        prefs.edit {
+            putInt("streak", newStreak)
+            putInt("total_workouts", totalWorkouts + 1)
+            putStringSet("trained_dates", trainedDates)
+            if (shouldUpdateLastDate) putString("last_workout_date", dateStr)
         }
-
-        editor.apply()
     }
 }

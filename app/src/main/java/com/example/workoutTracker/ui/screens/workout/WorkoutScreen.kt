@@ -8,33 +8,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import com.example.workouttracker.data.prefs.WorkoutPrefs
-import com.example.workouttracker.models.Note
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.workouttracker.ui.screens.workout.exercisesList.ExerciseListSection
 import com.example.workouttracker.ui.screens.workout.header.WorkoutScreenHeader
 import com.example.workouttracker.ui.screens.workout.notesList.NotesList
 import com.example.workouttracker.ui.theme.AppDimens
 import com.example.workouttracker.ui.theme.BlueAccent
 import com.example.workouttracker.ui.theme.BlueBGDark
-import java.time.LocalDate
 
 @Composable
-fun WorkoutScreen() {
-    val context = LocalContext.current
-    val prefs = remember { WorkoutPrefs(context) }
-
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var currentStreak by remember { mutableStateOf(prefs.streak) }
-    var trainedDates by remember { mutableStateOf(prefs.getTrainedDates()) }
-
-    val notesList = remember(selectedDate) { mutableStateListOf<Note>() }
+fun WorkoutScreen(
+    vm: WorkoutViewModel = viewModel()
+) {
+    val selectedDate by vm.selectedDate.collectAsState()
+    val currentStreak by vm.currentStreak.collectAsState()
+    val trainedDates by vm.trainedDates.collectAsState()
+    val notesList by vm.notesList.collectAsState()
+    val exerciseList by vm.exerciseList.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -50,13 +43,11 @@ fun WorkoutScreen() {
         item {
             WorkoutScreenHeader(
                 selectedDate = selectedDate,
-                onDateChanged = { newDate -> selectedDate = newDate },
+                onDateChanged = { vm.setDate(it) },
                 currentStreak = currentStreak,
                 trainedDates = trainedDates,
                 onSaveWorkout = {
-                    prefs.saveWorkout(selectedDate)
-                    currentStreak = prefs.streak
-                    trainedDates = prefs.getTrainedDates()
+                    vm.saveWorkout()
                 }
             )
 
@@ -71,7 +62,21 @@ fun WorkoutScreen() {
         item {
             Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
 
-            ExerciseListSection(selectedDate = selectedDate)
+            ExerciseListSection(
+                exercises = exerciseList,
+                onAddExercise = { vm.addExercise() },
+                onDeleteExercise = { id -> vm.removeExercise(id) },
+                onNameChange = { id, name -> vm.updateExerciseName(id, name) },
+                onAddSet = { exerciseId, weight, reps ->
+                    vm.addSetToExercise(exerciseId, weight, reps)
+                },
+                onDeleteSetRow = { exerciseId, fromIndex, count ->
+                    vm.removeSetRow(exerciseId, fromIndex, count)
+                },
+                onToggleSet = { exerciseId, setId ->
+                    vm.toggleSetCompleted(exerciseId, setId)
+                }
+            )
 
             Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
         }
@@ -86,16 +91,8 @@ fun WorkoutScreen() {
 
             NotesList(
                 notes = notesList,
-                onAddNoteClick = {
-                    val newId = (notesList.maxOfOrNull { it.id } ?: 0) + 1
-                    notesList.add(Note(id = newId, text = ""))
-                },
-                onNoteTextChange = { id, newText ->
-                    val index = notesList.indexOfFirst { it.id == id }
-                    if (index != -1) {
-                        notesList[index] = notesList[index].copy(text = newText)
-                    }
-                }
+                onAddNoteClick = { vm.addNote() },
+                onNoteTextChange = { id, text -> vm.updateNoteText(id, text) }
             )
         }
     }

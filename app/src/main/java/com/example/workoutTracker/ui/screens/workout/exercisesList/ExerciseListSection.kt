@@ -10,32 +10,40 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.workouttracker.models.Exercise
 import com.example.workouttracker.ui.theme.BlueAccent
 import com.example.workouttracker.ui.theme.BlueField
 import com.example.workouttracker.ui.theme.CustomFontFamily
-import java.time.LocalDate
-import java.util.UUID
 
 @Composable
-fun ExerciseListSection(selectedDate: LocalDate) {
-    val exercises = remember(selectedDate) { mutableStateListOf(UUID.randomUUID().toString()) }
-
+fun ExerciseListSection(
+    exercises: List<Exercise>,
+    onAddExercise: () -> Unit,
+    onDeleteExercise: (id: Int) -> Unit,
+    onNameChange: (id: Int, name: String) -> Unit,
+    onAddSet: (exerciseId: Int, weight: String, reps: String) -> Unit,
+    onDeleteSetRow: (exerciseId: Int, fromIndex: Int, count: Int) -> Unit,
+    onToggleSet: (exerciseId: Int, setId: Int) -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy((-2).dp)
     ) {
-        exercises.forEach { id ->
+        exercises.forEach { exercise ->
             ExerciseInputRow(
-                onDeleteExercise = {
-                    exercises.remove(id)
-                }
+                exercise = exercise,
+                onDeleteExercise = { onDeleteExercise(exercise.id) },
+                onNameChange = { name -> onNameChange(exercise.id, name) },
+                onAddSet = { weight, reps -> onAddSet(exercise.id, weight, reps) },
+                onDeleteSetRow = { fromIndex, count ->
+                    onDeleteSetRow(exercise.id, fromIndex, count)
+                },
+                onToggleSet = { setId -> onToggleSet(exercise.id, setId) }
             )
         }
 
@@ -44,9 +52,7 @@ fun ExerciseListSection(selectedDate: LocalDate) {
                 .fillMaxWidth()
                 .padding(top = 16.dp)
                 .background(BlueField, RoundedCornerShape(8.dp))
-                .clickable {
-                    exercises.add(UUID.randomUUID().toString())
-                }
+                .clickable { onAddExercise() }
                 .padding(vertical = 12.dp),
             contentAlignment = Alignment.Center
         ) {
