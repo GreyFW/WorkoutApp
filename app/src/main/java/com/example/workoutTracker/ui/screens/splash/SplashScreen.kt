@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.workouttracker.R
 import com.example.workouttracker.data.prefs.WorkoutPrefs
-import com.example.workouttracker.ui.components.LevelProgressBar
+import com.example.workouttracker.utils.LevelProgressBar
 import com.example.workouttracker.ui.theme.*
 
 @Composable

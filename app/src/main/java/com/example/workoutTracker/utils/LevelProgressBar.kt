@@ -1,4 +1,4 @@
-package com.example.workouttracker.ui.components
+package com.example.workouttracker.utils
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
