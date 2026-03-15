@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Workout Tracker</string>
+    <string name="app_name">Work UP</string>
 
     <string name="greeting">You got this!</string>
     <string name="current_streak">CURRENT STREAK: %1$d Days</string>

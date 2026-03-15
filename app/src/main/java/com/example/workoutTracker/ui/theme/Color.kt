@@ -19,7 +19,7 @@ val BlueBGDark = Color(0xFFDFE5F2)
 val BlueField = Color(0xFFC0CCE6)
 
 val BlueAccent = Color(0xFF3113B6)
-val BlueAccentBright = Color(0XFF3511D3)
+val AccentBright = Color(0xFF640CEF)
 val BlueAccentShadow = Color(0x66300D81)
 
 val BlueAccentSecondary = Color(0xFF5166CE)
